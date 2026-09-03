@@ -256,7 +256,8 @@ window.Flashcards = (function () {
         return {
           question: 'Besides ' + current.types[0] + ', what is ' + current.name + '’s other type?',
           options: options,
-          correct: correctType
+          correct: correctType,
+          hideSecondType: true
         };
       });
     }
@@ -294,11 +295,15 @@ window.Flashcards = (function () {
       return '<button class="option-btn" data-index="' + i + '">' + opt + '</button>';
     }).join('');
 
+    // Don't show the second type badge when that's the very thing being
+    // asked - it would just hand the kid the answer.
+    var visibleTypes = currentFact.hideSecondType ? current.types.slice(0, 1) : current.types;
+
     els.card.innerHTML =
       '<div class="details-header">' +
         '<img src="' + Dataset.imageUrl(current.id) + '" alt="' + current.name + '">' +
         '<h3>' + current.name + '</h3>' +
-        '<p class="type-badges">' + current.types.map(function (t) {
+        '<p class="type-badges">' + visibleTypes.map(function (t) {
           return '<span class="type-badge type-' + t + '">' + t + '</span>';
         }).join('') + '</p>' +
       '</div>' +

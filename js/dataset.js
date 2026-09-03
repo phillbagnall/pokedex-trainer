@@ -13,6 +13,23 @@ window.Dataset = (function () {
   var SPRITE_BASE =
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/';
 
+  // The order types were introduced across the games: all 15 original
+  // Gen 1 types, then Gen 2's Dark and Steel, then Gen 6's Fairy, then
+  // Gen 9's Stellar.
+  var TYPE_ORDER = [
+    'normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost',
+    'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon',
+    'steel', 'dark',
+    'fairy',
+    'stellar'
+  ];
+  var TYPE_ORDER_INDEX = {};
+  TYPE_ORDER.forEach(function (t, i) { TYPE_ORDER_INDEX[t] = i; });
+
+  function typeOrderIndex(t) {
+    return TYPE_ORDER_INDEX[t] !== undefined ? TYPE_ORDER_INDEX[t] : TYPE_ORDER.length;
+  }
+
   var all = [];
   var byId = new Map();
   var loaded = null;
@@ -74,7 +91,7 @@ window.Dataset = (function () {
         break;
       case 'type':
         copy.sort(function (a, b) {
-          return a.types[0].localeCompare(b.types[0]) || a.id - b.id;
+          return typeOrderIndex(a.types[0]) - typeOrderIndex(b.types[0]) || a.id - b.id;
         });
         break;
       case 'family':
@@ -104,7 +121,7 @@ window.Dataset = (function () {
   function types() {
     var set = new Set();
     all.forEach(function (p) { p.types.forEach(function (t) { set.add(t); }); });
-    return Array.from(set).sort();
+    return Array.from(set).sort(function (a, b) { return typeOrderIndex(a) - typeOrderIndex(b); });
   }
 
   return {
