@@ -222,6 +222,16 @@ main { flex: 1; padding: 12px 12px 24px; }
 /* ---- study ---- */
 
 .study-picker { text-align: center; padding-top: 12px; }
+.study-picker select {
+  width: 100%;
+  padding: 10px;
+  margin: 4px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--panel);
+  color: var(--ink);
+}
 
 .session-bar {
   display: flex;

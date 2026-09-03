@@ -13,8 +13,14 @@ window.Flashcards = (function () {
 
   var ROUND_SIZE = 10;
   var STAT_LABELS = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
+  var GEN_LABELS = {
+    1: 'Gen 1 (Kanto)', 2: 'Gen 2 (Johto)', 3: 'Gen 3 (Hoenn)',
+    4: 'Gen 4 (Sinnoh)', 5: 'Gen 5 (Unova)', 6: 'Gen 6 (Kalos)',
+    7: 'Gen 7 (Alola)', 8: 'Gen 8 (Galar)', 9: 'Gen 9 (Paldea)'
+  };
 
   var els = {};
+  var selectedGen = '';
   var mode = null;
   var queue = [];
   var idx = 0;
@@ -30,6 +36,18 @@ window.Flashcards = (function () {
     els.progressLabel = document.getElementById('study-progress-label');
     els.card = document.getElementById('study-card');
     els.roundStats = document.getElementById('study-round-stats');
+    els.genSelect = document.getElementById('study-gen');
+
+    Dataset.generations().forEach(function (g) {
+      var opt = document.createElement('option');
+      opt.value = g;
+      opt.textContent = GEN_LABELS[g] || ('Gen ' + g);
+      els.genSelect.appendChild(opt);
+    });
+    els.genSelect.addEventListener('change', function () {
+      selectedGen = els.genSelect.value;
+      refreshPicker();
+    });
 
     document.getElementById('study-mode-picture').addEventListener('click', function () { start('picture'); });
     document.getElementById('study-mode-details').addEventListener('click', function () { start('details'); });
@@ -40,11 +58,16 @@ window.Flashcards = (function () {
     refreshPicker();
   }
 
+  function poolIds() {
+    return Dataset.filter({ gen: selectedGen }).map(function (p) { return p.id; });
+  }
+
   function refreshPicker() {
-    var due = Progress.dueIds(Dataset.all().map(function (p) { return p.id; }));
+    var due = Progress.dueIds(poolIds());
+    var suffix = selectedGen ? ' in ' + (GEN_LABELS[selectedGen] || ('Gen ' + selectedGen)) : '';
     els.dueCount.textContent = due.length
-      ? due.length + ' due for review today.'
-      : 'Nothing due today - study any Pokemon for extra practice.';
+      ? due.length + ' due for review today' + suffix + '.'
+      : 'Nothing due today' + suffix + ' - study any Pokemon for extra practice.';
   }
 
   function shuffle(arr) {
@@ -56,7 +79,7 @@ window.Flashcards = (function () {
   }
 
   function buildQueue() {
-    var allIds = Dataset.all().map(function (p) { return p.id; });
+    var allIds = poolIds();
     var due = Progress.dueIds(allIds);
     var pool = due.length ? due : allIds;
     return shuffle(pool.slice()).slice(0, Math.min(ROUND_SIZE, pool.length));
