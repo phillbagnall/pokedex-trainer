@@ -13,15 +13,13 @@ window.Dataset = (function () {
   var SPRITE_BASE =
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/';
 
-  // The order types were introduced across the games: all 15 original
-  // Gen 1 types, then Gen 2's Dark and Steel, then Gen 6's Fairy, then
-  // Gen 9's Stellar.
+  // Custom preferred order for the type sort and filter list - just her
+  // own ranking, not tied to game history. Edit this array to change it;
+  // anything left out (e.g. Stellar) sorts after everything listed here.
   var TYPE_ORDER = [
-    'normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost',
-    'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon',
-    'steel', 'dark',
-    'fairy',
-    'stellar'
+    'grass', 'fire', 'water', 'bug', 'normal', 'poison', 'electric',
+    'ground', 'fighting', 'psychic', 'rock', 'ghost', 'ice', 'dark',
+    'steel', 'dragon', 'flying', 'fairy'
   ];
   var TYPE_ORDER_INDEX = {};
   TYPE_ORDER.forEach(function (t, i) { TYPE_ORDER_INDEX[t] = i; });
