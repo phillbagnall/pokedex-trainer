@@ -102,7 +102,7 @@ main { flex: 1; padding: 12px 12px 24px; }
 
 /* ---- browse ---- */
 
-.browse-controls input[type="search"],
+.browse-controls input[type="text"],
 .browse-controls select {
   width: 100%;
   padding: 10px;
@@ -114,6 +114,22 @@ main { flex: 1; padding: 12px 12px 24px; }
 }
 .filter-row { display: flex; gap: 8px; }
 .filter-row select { flex: 1; }
+
+.search-wrap { position: relative; }
+.search-wrap input { padding-right: 40px; }
+.field-clear-btn {
+  position: absolute;
+  top: 0;
+  bottom: 8px; /* matches the input's margin-bottom so it stays centred on it */
+  right: 4px;
+  width: 32px;
+  border: none;
+  background: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
 
 .due-toggle {
   display: flex;

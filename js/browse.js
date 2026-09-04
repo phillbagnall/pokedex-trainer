@@ -15,14 +15,17 @@ window.Browse = (function () {
   var STAT_MAX = 180; // rough ceiling for the stat-bar widths
 
   var els = {};
-  var state = { gen: '', type: '', query: '', sort: 'dex', dueOnly: false };
+  var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false };
 
   function init() {
     els.search = document.getElementById('browse-search');
+    els.searchClear = document.getElementById('browse-search-clear');
     els.gen = document.getElementById('browse-gen');
     els.type = document.getElementById('browse-type');
+    els.family = document.getElementById('browse-family');
     els.sort = document.getElementById('browse-sort');
     els.dueOnly = document.getElementById('browse-due-only');
+    els.clearFilters = document.getElementById('browse-clear-filters');
     els.count = document.getElementById('browse-count');
     els.grid = document.getElementById('browse-grid');
     els.overlay = document.getElementById('detail-overlay');
@@ -41,15 +44,30 @@ window.Browse = (function () {
       opt.textContent = t[0].toUpperCase() + t.slice(1);
       els.type.appendChild(opt);
     });
+    Dataset.families().forEach(function (f) {
+      var opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = f.name + ' line';
+      els.family.appendChild(opt);
+    });
 
     els.search.addEventListener('input', function () {
       state.query = els.search.value;
+      els.searchClear.hidden = !state.query;
+      render();
+    });
+    els.searchClear.addEventListener('click', function () {
+      state.query = '';
+      els.search.value = '';
+      els.searchClear.hidden = true;
       render();
     });
     els.gen.addEventListener('change', function () { state.gen = els.gen.value; render(); });
     els.type.addEventListener('change', function () { state.type = els.type.value; render(); });
+    els.family.addEventListener('change', function () { state.family = els.family.value; render(); });
     els.sort.addEventListener('change', function () { state.sort = els.sort.value; render(); });
     els.dueOnly.addEventListener('change', function () { state.dueOnly = els.dueOnly.checked; render(); });
+    els.clearFilters.addEventListener('click', clearFilters);
 
     els.grid.addEventListener('click', function (e) {
       var card = e.target.closest('.poke-card');
@@ -63,8 +81,23 @@ window.Browse = (function () {
     render();
   }
 
+  function clearFilters() {
+    state.gen = '';
+    state.type = '';
+    state.family = '';
+    state.query = '';
+    state.dueOnly = false;
+    els.gen.value = '';
+    els.type.value = '';
+    els.family.value = '';
+    els.search.value = '';
+    els.searchClear.hidden = true;
+    els.dueOnly.checked = false;
+    render();
+  }
+
   function computeList() {
-    var list = Dataset.filter({ gen: state.gen, type: state.type, query: state.query });
+    var list = Dataset.filter({ gen: state.gen, type: state.type, family: state.family, query: state.query });
     if (state.dueOnly) {
       var due = new Set(Progress.dueIds(Dataset.all().map(function (p) { return p.id; })));
       list = list.filter(function (p) { return due.has(p.id); });

@@ -51,6 +51,7 @@ window.Flashcards = (function () {
 
     document.getElementById('study-mode-picture').addEventListener('click', function () { start('picture'); });
     document.getElementById('study-mode-details').addEventListener('click', function () { start('details'); });
+    document.getElementById('study-mode-evolution').addEventListener('click', function () { start('evolution'); });
     document.getElementById('study-quit').addEventListener('click', backToPicker);
     document.getElementById('study-back').addEventListener('click', backToPicker);
     document.getElementById('study-again').addEventListener('click', function () { start(mode); });
@@ -60,6 +61,19 @@ window.Flashcards = (function () {
 
   function poolIds() {
     return Dataset.filter({ gen: selectedGen }).map(function (p) { return p.id; });
+  }
+
+  // Evolutions mode can only ask about Pokemon that actually evolve from
+  // or into something.
+  function eligibleIds() {
+    var ids = poolIds();
+    if (mode === 'evolution') {
+      ids = ids.filter(function (id) {
+        var p = Dataset.byId(id);
+        return p.evoFrom || p.evoTo.length;
+      });
+    }
+    return ids;
   }
 
   function refreshPicker() {
@@ -79,7 +93,7 @@ window.Flashcards = (function () {
   }
 
   function buildQueue() {
-    var allIds = poolIds();
+    var allIds = eligibleIds();
     var due = Progress.dueIds(allIds);
     var pool = due.length ? due : allIds;
     return shuffle(pool.slice()).slice(0, Math.min(ROUND_SIZE, pool.length));
@@ -88,6 +102,10 @@ window.Flashcards = (function () {
   function start(selectedMode) {
     mode = selectedMode;
     queue = buildQueue();
+    if (!queue.length) {
+      els.dueCount.textContent = 'No evolving Pokemon in this selection - try a different generation.';
+      return;
+    }
     idx = 0;
     correctCount = 0;
     els.picker.hidden = true;
@@ -108,6 +126,7 @@ window.Flashcards = (function () {
     current = Dataset.byId(queue[idx]);
     els.progressLabel.textContent = (idx + 1) + ' / ' + queue.length;
     if (mode === 'picture') renderPictureCard();
+    else if (mode === 'evolution') renderEvolutionCard();
     else renderDetailsCard();
   }
 
@@ -209,6 +228,33 @@ window.Flashcards = (function () {
     });
   }
 
+  /* ---------------- shared evolution fact (used by Details and Evolutions) ---------------- */
+
+  /*
+   * direction 'forward' asks what current evolves into; 'backward' asks
+   * what it evolves from. Caller is responsible for only asking for a
+   * direction current actually has (evoTo.length / evoFrom).
+   */
+  function evoFact(direction) {
+    var targetId = direction === 'forward'
+      ? current.evoTo[Math.floor(Math.random() * current.evoTo.length)].id
+      : current.evoFrom;
+    var targetPoke = Dataset.byId(targetId);
+    var others = shuffle(
+      Dataset.all().filter(function (p) {
+        return p.id !== targetPoke.id && p.id !== current.id && p.family !== current.family;
+      })
+    ).slice(0, 3);
+    var options = shuffle([targetPoke.name].concat(others.map(function (p) { return p.name; })));
+    return {
+      question: direction === 'forward'
+        ? 'What does ' + current.name + ' evolve into?'
+        : 'What does ' + current.name + ' evolve from?',
+      options: options,
+      correct: targetPoke.name
+    };
+  }
+
   /* ---------------- Name/Type -> Details ---------------- */
 
   function buildFact() {
@@ -231,21 +277,7 @@ window.Flashcards = (function () {
     });
 
     if (current.evoTo.length) {
-      generators.push(function () {
-        var target = current.evoTo[Math.floor(Math.random() * current.evoTo.length)];
-        var targetPoke = Dataset.byId(target.id);
-        var others = shuffle(
-          Dataset.all().filter(function (p) {
-            return p.id !== targetPoke.id && p.id !== current.id && p.family !== current.family;
-          })
-        ).slice(0, 3);
-        var options = shuffle([targetPoke.name].concat(others.map(function (p) { return p.name; })));
-        return {
-          question: 'What does ' + current.name + ' evolve into?',
-          options: options,
-          correct: targetPoke.name
-        };
-      });
+      generators.push(function () { return evoFact('forward'); });
     }
 
     if (current.types.length > 1) {
@@ -290,7 +322,28 @@ window.Flashcards = (function () {
   }
 
   function renderDetailsCard() {
-    currentFact = buildFact();
+    renderChoiceCard(buildFact);
+  }
+
+  /* ---------------- Evolutions ---------------- */
+
+  function buildEvolutionFact() {
+    var canForward = current.evoTo.length > 0;
+    var canBackward = !!current.evoFrom;
+    var direction = canForward && canBackward
+      ? (Math.random() < 0.5 ? 'forward' : 'backward')
+      : (canForward ? 'forward' : 'backward');
+    return evoFact(direction);
+  }
+
+  function renderEvolutionCard() {
+    renderChoiceCard(buildEvolutionFact);
+  }
+
+  /* ---------------- shared multiple-choice rendering ---------------- */
+
+  function renderChoiceCard(factBuilder) {
+    currentFact = factBuilder();
     var optionsHtml = currentFact.options.map(function (opt, i) {
       return '<button class="option-btn" data-index="' + i + '">' + opt + '</button>';
     }).join('');

@@ -29,13 +29,21 @@
     <!-- ================= BROWSE ================= -->
     <section id="screen-browse" class="screen active">
       <div class="browse-controls">
-        <input id="browse-search" type="search" placeholder="Search by name&hellip;" autocomplete="off">
+        <div class="search-wrap">
+          <input id="browse-search" type="text" placeholder="Search by name&hellip;" autocomplete="off">
+          <button id="browse-search-clear" type="button" class="field-clear-btn" aria-label="Clear search" hidden>&times;</button>
+        </div>
         <div class="filter-row">
           <select id="browse-gen" aria-label="Filter by generation">
             <option value="">All generations</option>
           </select>
           <select id="browse-type" aria-label="Filter by type">
             <option value="">All types</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <select id="browse-family" aria-label="Filter by evolution line">
+            <option value="">All evolution lines</option>
           </select>
         </div>
         <div class="filter-row">
@@ -51,6 +59,7 @@
           <input type="checkbox" id="browse-due-only">
           <span>Due for review only</span>
         </label>
+        <button id="browse-clear-filters" type="button" class="link-btn">Clear filters</button>
       </div>
       <p id="browse-count" class="result-count"></p>
       <div id="browse-grid" class="poke-grid"></div>
@@ -66,6 +75,7 @@
         <p id="study-due-count" class="muted"></p>
         <button id="study-mode-picture" class="btn btn-primary">Picture &rarr; Name</button>
         <button id="study-mode-details" class="btn btn-primary">Name/Type &rarr; Details</button>
+        <button id="study-mode-evolution" class="btn btn-primary">Evolutions</button>
       </div>
 
       <div id="study-session" class="study-session" hidden>

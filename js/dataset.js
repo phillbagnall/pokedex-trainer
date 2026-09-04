@@ -67,10 +67,12 @@ window.Dataset = (function () {
     opts = opts || {};
     var gen = opts.gen;
     var type = opts.type;
+    var family = opts.family;
     var query = normalise(opts.query);
     return all.filter(function (p) {
       if (gen && p.gen !== Number(gen)) return false;
       if (type && p.types.indexOf(type) === -1) return false;
+      if (family && p.family !== Number(family)) return false;
       if (query && p.name.toLowerCase().indexOf(query) === -1) return false;
       return true;
     });
@@ -122,6 +124,23 @@ window.Dataset = (function () {
     return Array.from(set).sort(function (a, b) { return typeOrderIndex(a) - typeOrderIndex(b); });
   }
 
+  /*
+   * Evolution lines with more than one member, e.g. {id: 172, name:
+   * 'Pichu'} for the Pichu -> Pikachu -> Raichu line (id is the family's
+   * base-species id, same value each member's `family` field carries).
+   * Solo species (no evolutions either way) are left out - filtering to
+   * just one of them is the same as searching its name.
+   */
+  function families() {
+    var counts = {};
+    all.forEach(function (p) { counts[p.family] = (counts[p.family] || 0) + 1; });
+    return Object.keys(counts)
+      .filter(function (f) { return counts[f] > 1; })
+      .map(function (f) { return Number(f); })
+      .sort(function (a, b) { return a - b; })
+      .map(function (f) { return { id: f, name: byId.get(f).name }; });
+  }
+
   return {
     load: load,
     all: getAll,
@@ -130,6 +149,7 @@ window.Dataset = (function () {
     filter: filter,
     sort: sortList,
     generations: generations,
-    types: types
+    types: types,
+    families: families
   };
 })();
