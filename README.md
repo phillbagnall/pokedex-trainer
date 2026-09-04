@@ -83,10 +83,12 @@ writes `data/pokemon.json` — no API keys, no npm install. Needs Node 18+.
 index.html                 markup for all three screens
 css/styles.css              all styling
 js/dataset.js                loads data/pokemon.json, filter/sort/lookup helpers
+js/typechart.js               type effectiveness chart (weak to / resists)
+js/sound.js                   synthesised correct/wrong sound cues
 js/progress.js               Leitner-box localStorage store
 js/browse.js                 search/filter/sort grid + detail overlay
-js/flashcards.js             both study modes
-js/app.js                    tab routing, progress screen
+js/flashcards.js             all three study modes
+js/app.js                    tab routing, progress screen, update checks
 data/pokemon.json            generated dataset (~215 KB)
 manifest.webmanifest         app name, icons and colours when installed
 sw.js                        service worker — offline app shell + sprite caching

@@ -55,8 +55,8 @@ window.Dataset = (function () {
     return byId.get(Number(id));
   }
 
-  function imageUrl(id) {
-    return SPRITE_BASE + id + '.png';
+  function imageUrl(id, shiny) {
+    return SPRITE_BASE + (shiny ? 'shiny/' : '') + id + '.png';
   }
 
   function normalise(s) {

@@ -146,11 +146,21 @@ window.Flashcards = (function () {
         '<div id="fc-suggestions" class="suggestions"></div>' +
         '<button type="submit" class="btn btn-primary">Guess</button>' +
       '</form>' +
+      '<p class="hint-row"><button type="button" id="fc-hint-btn" class="link-btn">Hint</button></p>' +
+      '<p id="fc-hint" class="muted" hidden></p>' +
       '<div id="fc-result" class="fc-result"></div>';
 
     var input = document.getElementById('fc-guess');
     var suggestions = document.getElementById('fc-suggestions');
     var form = document.getElementById('fc-guess-form');
+    var hintBtn = document.getElementById('fc-hint-btn');
+    var hintEl = document.getElementById('fc-hint');
+
+    hintBtn.addEventListener('click', function () {
+      hintEl.textContent = 'Starts with "' + current.name[0].toUpperCase() + '" · ' + current.name.length + ' letters';
+      hintEl.hidden = false;
+      hintBtn.hidden = true;
+    });
 
     input.addEventListener('input', function () {
       var q = input.value.trim().toLowerCase();
@@ -208,7 +218,7 @@ window.Flashcards = (function () {
       if (recorded) return;
       recorded = true;
       Progress.recordResult(current.id, wasCorrect);
-      if (wasCorrect) correctCount += 1;
+      if (wasCorrect) { correctCount += 1; Sound.correct(); } else { Sound.wrong(); }
     }
 
     if (correct) finalise(true);
@@ -383,7 +393,7 @@ window.Flashcards = (function () {
     });
 
     Progress.recordResult(current.id, correct);
-    if (correct) correctCount += 1;
+    if (correct) { correctCount += 1; Sound.correct(); } else { Sound.wrong(); }
 
     document.getElementById('fc-result').innerHTML =
       '<p class="' + (correct ? 'result-correct' : 'result-wrong') + '">' +

@@ -16,6 +16,7 @@ window.Browse = (function () {
 
   var els = {};
   var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false };
+  var overlayOpen = false;
 
   function init() {
     els.search = document.getElementById('browse-search');
@@ -76,6 +77,13 @@ window.Browse = (function () {
     els.detailClose.addEventListener('click', closeDetail);
     els.overlay.addEventListener('click', function (e) {
       if (e.target === els.overlay) closeDetail();
+    });
+    // A phone's hardware/gesture back button should close the detail
+    // popup, not exit the app: opening it pushes a history entry, and
+    // popping that entry (by any means - back button or the close
+    // controls above) is what actually hides it.
+    window.addEventListener('popstate', function () {
+      if (overlayOpen) hideDetail();
     });
 
     render();
@@ -161,6 +169,22 @@ window.Browse = (function () {
     }).join('');
   }
 
+  function matchupBadges(list) {
+    return list.map(function (m) {
+      var label = m.mult === 4 ? '4x' : m.mult === 2 ? '2x' : m.mult === 0.5 ? '1/2x' : m.mult === 0.25 ? '1/4x' : '0x';
+      return '<span class="type-badge type-' + m.type + '">' + m.type + ' ' + label + '</span>';
+    }).join('');
+  }
+
+  function matchupsBlock(types) {
+    var m = TypeChart.matchups(types);
+    var rows = [];
+    if (m.weak.length) rows.push('<p class="matchup-row"><span class="matchup-label">Weak to</span>' + matchupBadges(m.weak) + '</p>');
+    if (m.resist.length) rows.push('<p class="matchup-row"><span class="matchup-label">Resists</span>' + matchupBadges(m.resist) + '</p>');
+    if (m.immune.length) rows.push('<p class="matchup-row"><span class="matchup-label">Immune to</span>' + matchupBadges(m.immune) + '</p>');
+    return rows.join('');
+  }
+
   function openDetail(id) {
     var p = Dataset.byId(id);
     if (!p) return;
@@ -169,23 +193,53 @@ window.Browse = (function () {
       ? 'Leitner box ' + entry.box + '/5 &middot; seen ' + entry.seen + ' &middot; ' +
         Math.round((entry.correct / entry.seen) * 100) + '% correct'
       : 'Not studied yet';
+    var isFamily = !!(p.evoFrom || p.evoTo.length);
 
     els.detailBody.innerHTML =
-      '<img class="detail-img" src="' + Dataset.imageUrl(p.id) + '" alt="' + p.name + '">' +
+      '<img id="detail-img" class="detail-img" src="' + Dataset.imageUrl(p.id) + '" alt="' + p.name + '">' +
+      '<p class="shiny-toggle-row"><button id="detail-shiny-toggle" type="button" class="link-btn">&#10024; View shiny</button></p>' +
       '<h2>' + p.name + ' <span class="muted">#' + String(p.id).padStart(3, '0') + '</span></h2>' +
       '<p class="type-badges">' + typeBadges(p.types) + '</p>' +
+      '<div class="matchups">' + matchupsBlock(p.types) + '</div>' +
       '<p class="muted">' + (GEN_LABELS[p.gen] || ('Gen ' + p.gen)) + '</p>' +
       '<div class="stat-block">' + statBars(p.stats) + '</div>' +
       '<p>Height ' + (p.height / 10).toFixed(1) + ' m &middot; Weight ' + (p.weight / 10).toFixed(1) + ' kg</p>' +
       '<p>Abilities: ' + p.abilities.join(', ') + '</p>' +
       '<p class="evo-line">' + evoChainLine(p) + '</p>' +
+      (isFamily ? '<button id="detail-see-line" type="button" class="btn btn-primary">See full evolution line</button>' : '') +
       '<p class="muted">' + boxLine + '</p>';
 
+    var shinyBtn = document.getElementById('detail-shiny-toggle');
+    var isShiny = false;
+    shinyBtn.addEventListener('click', function () {
+      isShiny = !isShiny;
+      document.getElementById('detail-img').src = Dataset.imageUrl(p.id, isShiny);
+      shinyBtn.innerHTML = isShiny ? '&#10024; View normal' : '&#10024; View shiny';
+    });
+
+    var seeLineBtn = document.getElementById('detail-see-line');
+    if (seeLineBtn) {
+      seeLineBtn.addEventListener('click', function () {
+        state.family = String(p.family);
+        els.family.value = state.family;
+        render();
+        closeDetail();
+      });
+    }
+
     els.overlay.hidden = false;
+    overlayOpen = true;
+    history.pushState({ pokedexDetail: true }, '');
   }
 
   function closeDetail() {
+    if (!overlayOpen) return;
+    history.back();
+  }
+
+  function hideDetail() {
     els.overlay.hidden = true;
+    overlayOpen = false;
   }
 
   return { init: init, refresh: render };

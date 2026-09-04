@@ -58,6 +58,36 @@
     }).join('');
   }
 
+  function checkForUpdates() {
+    var statusEl = document.getElementById('update-status');
+    if (!('serviceWorker' in navigator)) {
+      statusEl.textContent = 'Not supported in this browser.';
+      return;
+    }
+    statusEl.textContent = 'Checking…';
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      if (!reg) {
+        statusEl.textContent = 'Not installed yet - reload the page first.';
+        return;
+      }
+      var found = false;
+      reg.addEventListener('updatefound', function () {
+        found = true;
+        statusEl.textContent = 'Update found - installing…';
+      });
+      reg.update().then(function () {
+        // The page auto-reloads once the new version takes over (see the
+        // controllerchange handler below) - this just covers the "nothing
+        // to update" case, since update() resolves either way.
+        setTimeout(function () {
+          if (!found) statusEl.textContent = 'Already up to date.';
+        }, 1500);
+      }).catch(function () {
+        statusEl.textContent = 'Could not check for updates right now.';
+      });
+    });
+  }
+
   function init() {
     Dataset.load().then(function () {
       document.getElementById('app-loading').hidden = true;
@@ -77,6 +107,14 @@
           renderProgress();
         }
       });
+
+      var soundToggle = document.getElementById('sound-toggle');
+      soundToggle.checked = Sound.enabled();
+      soundToggle.addEventListener('change', function () {
+        Sound.setEnabled(soundToggle.checked);
+      });
+
+      document.getElementById('check-updates').addEventListener('click', checkForUpdates);
     }).catch(function (err) {
       document.getElementById('app-loading').textContent =
         'Could not load the Pokedex data. Check your connection and reload.';

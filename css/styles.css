@@ -223,7 +223,12 @@ main { flex: 1; padding: 12px 12px 24px; }
   cursor: pointer;
 }
 .detail-img { width: 140px; height: 140px; object-fit: contain; display: block; margin: 0 auto; }
+.shiny-toggle-row { text-align: center; margin: 2px 0 0; }
 .detail-card h2 { text-align: center; margin: 4px 0; }
+
+.matchups { margin: 6px 0; }
+.matchup-row { margin: 4px 0; font-size: 0.85rem; }
+.matchup-label { color: var(--muted); margin-right: 6px; }
 
 .stat-block { margin: 12px 0; }
 .stat-row { display: grid; grid-template-columns: 70px 1fr 34px; align-items: center; gap: 6px; margin: 4px 0; }
