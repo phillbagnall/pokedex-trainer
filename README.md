@@ -106,11 +106,23 @@ host as the sync server, `API_BASE` can point anywhere).
 Once that's done, **Progress → Sync across devices** lets her tap "Start
 syncing" to get a code (shown on screen, with a copy button), then enter
 that same code under "Join" on any other device to pull that progress
-across. Progress pushes to the server automatically after each answer
-while sync is on; "Sync now" manually re-pulls the latest (this
-overwrites whatever's on that device, by design - simplest to reason
-about, and fine for the "practice on the phone, catch up on the laptop
-later" use case this is built for).
+across.
+
+After that first join, it's automatic in the common case: every answer
+pushes to the server (debounced), and *opening the app* on any synced
+device reconciles with the server first - pushing anything answered
+locally, then pulling the latest - so switching from phone to laptop and
+back should just work without her having to remember to tap anything.
+"Sync now" is there for re-pulling mid-session (e.g. she knows the laptop
+has moved on and wants this device caught up right now) - unlike the
+open-the-app reconcile, that one skips the push and just overwrites this
+device with the server's copy, so only use it when this device has
+nothing of its own worth keeping since the last sync. The one gap this
+doesn't cover: two devices both answering *offline* before either goes
+back online - whichever reconciles second wins, and the other's offline
+answers are lost. Fine for this app's actual use (practice on the phone,
+catch up on the laptop later), not built for simultaneous use on two
+devices.
 
 ## Updating the Pokémon data
 

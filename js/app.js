@@ -185,6 +185,18 @@
       document.getElementById('check-updates').addEventListener('click', checkForUpdates);
 
       wireSync();
+
+      // If sync is on, reconcile with the server as soon as the app opens
+      // (push anything answered locally, then pull the latest) - this is
+      // what makes switching devices "just work" without her having to
+      // remember to tap "Sync now" herself.
+      if (Sync.code()) {
+        Sync.reconcileOnBoot().then(function () {
+          window.Browse.refresh();
+          window.Flashcards.refreshPicker();
+          if (document.getElementById('screen-progress').classList.contains('active')) renderProgress();
+        }).catch(function () { /* offline or server down - local progress stands for now */ });
+      }
     }).catch(function (err) {
       document.getElementById('app-loading').textContent =
         'Could not load the Pokedex data. Check your connection and reload.';
