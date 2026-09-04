@@ -15,7 +15,7 @@ window.Browse = (function () {
   var STAT_MAX = 180; // rough ceiling for the stat-bar widths
 
   var els = {};
-  var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false };
+  var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false, shiny: false };
   var overlayOpen = false;
 
   function init() {
@@ -26,6 +26,7 @@ window.Browse = (function () {
     els.family = document.getElementById('browse-family');
     els.sort = document.getElementById('browse-sort');
     els.dueOnly = document.getElementById('browse-due-only');
+    els.shiny = document.getElementById('browse-shiny');
     els.clearFilters = document.getElementById('browse-clear-filters');
     els.count = document.getElementById('browse-count');
     els.grid = document.getElementById('browse-grid');
@@ -45,12 +46,15 @@ window.Browse = (function () {
       opt.textContent = t[0].toUpperCase() + t.slice(1);
       els.type.appendChild(opt);
     });
-    Dataset.families().forEach(function (f) {
-      var opt = document.createElement('option');
-      opt.value = f.id;
-      opt.textContent = f.name + ' line';
-      els.family.appendChild(opt);
-    });
+    Dataset.families()
+      .slice()
+      .sort(function (a, b) { return a.name.localeCompare(b.name); })
+      .forEach(function (f) {
+        var opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = f.name + ' line';
+        els.family.appendChild(opt);
+      });
 
     els.search.addEventListener('input', function () {
       state.query = els.search.value;
@@ -68,6 +72,7 @@ window.Browse = (function () {
     els.family.addEventListener('change', function () { state.family = els.family.value; render(); });
     els.sort.addEventListener('change', function () { state.sort = els.sort.value; render(); });
     els.dueOnly.addEventListener('change', function () { state.dueOnly = els.dueOnly.checked; render(); });
+    els.shiny.addEventListener('change', function () { state.shiny = els.shiny.checked; render(); });
     els.clearFilters.addEventListener('click', clearFilters);
 
     els.grid.addEventListener('click', function (e) {
@@ -130,7 +135,7 @@ window.Browse = (function () {
       card.dataset.id = p.id;
       card.innerHTML =
         '<span class="poke-dex">#' + String(p.id).padStart(3, '0') + '</span>' +
-        '<img loading="lazy" src="' + Dataset.imageUrl(p.id) + '" alt="' + p.name + '">' +
+        '<img loading="lazy" src="' + Dataset.imageUrl(p.id, state.shiny) + '" alt="' + p.name + '">' +
         '<span class="poke-name">' + p.name + '</span>' +
         '<span class="type-badges">' + typeBadges(p.types) + '</span>';
       frag.appendChild(card);
@@ -196,8 +201,7 @@ window.Browse = (function () {
     var isFamily = !!(p.evoFrom || p.evoTo.length);
 
     els.detailBody.innerHTML =
-      '<img id="detail-img" class="detail-img" src="' + Dataset.imageUrl(p.id) + '" alt="' + p.name + '">' +
-      '<p class="shiny-toggle-row"><button id="detail-shiny-toggle" type="button" class="link-btn">&#10024; View shiny</button></p>' +
+      '<img id="detail-img" class="detail-img" src="' + Dataset.imageUrl(p.id, state.shiny) + '" alt="' + p.name + '">' +
       '<h2>' + p.name + ' <span class="muted">#' + String(p.id).padStart(3, '0') + '</span></h2>' +
       '<p class="type-badges">' + typeBadges(p.types) + '</p>' +
       '<div class="matchups">' + matchupsBlock(p.types) + '</div>' +
@@ -208,14 +212,6 @@ window.Browse = (function () {
       '<p class="evo-line">' + evoChainLine(p) + '</p>' +
       (isFamily ? '<button id="detail-see-line" type="button" class="btn btn-primary">See full evolution line</button>' : '') +
       '<p class="muted">' + boxLine + '</p>';
-
-    var shinyBtn = document.getElementById('detail-shiny-toggle');
-    var isShiny = false;
-    shinyBtn.addEventListener('click', function () {
-      isShiny = !isShiny;
-      document.getElementById('detail-img').src = Dataset.imageUrl(p.id, isShiny);
-      shinyBtn.innerHTML = isShiny ? '&#10024; View normal' : '&#10024; View shiny';
-    });
 
     var seeLineBtn = document.getElementById('detail-see-line');
     if (seeLineBtn) {

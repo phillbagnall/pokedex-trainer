@@ -223,7 +223,6 @@ main { flex: 1; padding: 12px 12px 24px; }
   cursor: pointer;
 }
 .detail-img { width: 140px; height: 140px; object-fit: contain; display: block; margin: 0 auto; }
-.shiny-toggle-row { text-align: center; margin: 2px 0 0; }
 .detail-card h2 { text-align: center; margin: 4px 0; }
 
 .matchups { margin: 6px 0; }
