@@ -2,15 +2,13 @@
  * Sync: progress across devices via a short code, talking to the
  * self-hosted server in server/index.mjs - no accounts, no passwords.
  *
- * IMPORTANT: API_BASE below is a placeholder. Sync won't work until you
- * deploy server/index.mjs somewhere reachable and change this constant
- * to point at it (see the "Cross-device sync" section in README.md),
- * then push/redeploy the site.
+ * Deployed on Home_Server behind the home-assistant Cloudflare Tunnel,
+ * same pattern as the other self-hosted apps on this domain.
  */
 window.Sync = (function () {
   'use strict';
 
-  var API_BASE = 'https://pokedex-sync.example.com';
+  var API_BASE = 'https://pokedex-sync.locke-bagnall.co.uk';
 
   var CODE_KEY = 'pokedex.synccode.v1';
   // Set as soon as a local answer hasn't been confirmed pushed yet, cleared
