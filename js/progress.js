@@ -67,11 +67,22 @@ window.Progress = (function () {
 
     data[key] = entry;
     write(data);
+    if (window.Sync) window.Sync.schedulePush();
     return entry;
   }
 
   function reset() {
     write(blank());
+  }
+
+  /* ---------------- sync (js/sync.js) ---------------- */
+
+  function exportAll() {
+    return read();
+  }
+
+  function importAll(data) {
+    write(data && typeof data === 'object' ? data : blank());
   }
 
   /* ---------------- reading ---------------- */
@@ -154,6 +165,8 @@ window.Progress = (function () {
     entryOf: entryOf,
     dueIds: dueIds,
     summary: summary,
-    breakdownBy: breakdownBy
+    breakdownBy: breakdownBy,
+    exportAll: exportAll,
+    importAll: importAll
   };
 })();

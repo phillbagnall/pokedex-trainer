@@ -344,6 +344,24 @@ main { flex: 1; padding: 12px 12px 24px; }
 .breakdown-bar span { display: block; height: 100%; background: var(--accent); }
 .breakdown-pct { font-size: 0.8rem; text-align: right; }
 
+#sync-off .filter-row input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--panel);
+}
+#sync-off .filter-row button { flex: 0 0 auto; width: auto; padding: 10px 14px; }
+.sync-code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 1.6rem;
+  letter-spacing: 0.15em;
+  text-align: center;
+  font-weight: 700;
+  margin: 6px 0;
+}
+
 @media (min-width: 640px) {
   #app { max-width: 640px; margin: 0 auto; }
   .tabbar { max-width: 640px; margin: 0 auto; }

@@ -39,6 +39,15 @@
 
     renderBreakdown('progress-by-type', Progress.breakdownBy(Dataset.all(), function (p) { return p.types[0]; }));
     renderBreakdown('progress-by-gen', Progress.breakdownBy(Dataset.all(), function (p) { return GEN_LABELS[p.gen]; }));
+
+    renderSyncSection();
+  }
+
+  function renderSyncSection() {
+    var active = !!Sync.code();
+    document.getElementById('sync-off').hidden = active;
+    document.getElementById('sync-on').hidden = !active;
+    if (active) document.getElementById('sync-code-display').textContent = Sync.code();
   }
 
   function renderBreakdown(elId, rows) {
@@ -88,6 +97,65 @@
     });
   }
 
+  function wireSync() {
+    var statusEl = document.getElementById('sync-status');
+
+    document.getElementById('sync-enable').addEventListener('click', function () {
+      statusEl.textContent = 'Starting sync…';
+      Sync.enable().then(function () {
+        statusEl.textContent = 'Sync started - enter this code on your other device.';
+        renderSyncSection();
+      }).catch(function () {
+        statusEl.textContent = 'Could not reach the sync server. Check it is set up and try again.';
+      });
+    });
+
+    document.getElementById('sync-join').addEventListener('click', function () {
+      var input = document.getElementById('sync-join-code');
+      var c = input.value.trim();
+      if (!c) return;
+      if (Progress.summary().tracked > 0 &&
+          !window.confirm('This will replace this device’s progress with the synced version. Continue?')) {
+        return;
+      }
+      statusEl.textContent = 'Joining…';
+      Sync.join(c).then(function () {
+        statusEl.textContent = 'Synced!';
+        input.value = '';
+        renderSyncSection();
+        renderProgress();
+      }).catch(function (err) {
+        statusEl.textContent = err.message === 'not-found'
+          ? 'That code hasn’t been used yet - start syncing on your other device first.'
+          : 'Could not reach the sync server.';
+      });
+    });
+
+    document.getElementById('sync-now').addEventListener('click', function () {
+      statusEl.textContent = 'Syncing…';
+      Sync.syncNow().then(function () {
+        statusEl.textContent = 'Synced!';
+        renderProgress();
+      }).catch(function () {
+        statusEl.textContent = 'Could not reach the sync server.';
+      });
+    });
+
+    document.getElementById('sync-copy').addEventListener('click', function () {
+      var c = Sync.code();
+      if (navigator.clipboard) navigator.clipboard.writeText(c).catch(function () {});
+      statusEl.textContent = 'Code copied.';
+    });
+
+    document.getElementById('sync-disable').addEventListener('click', function () {
+      if (window.confirm('Stop syncing on this device? Your progress here stays as-is; the code still works on your other device.')) {
+        Sync.disable();
+        statusEl.textContent = '';
+        renderSyncSection();
+      }
+    });
+  }
+
   function init() {
     Dataset.load().then(function () {
       document.getElementById('app-loading').hidden = true;
@@ -115,6 +183,8 @@
       });
 
       document.getElementById('check-updates').addEventListener('click', checkForUpdates);
+
+      wireSync();
     }).catch(function (err) {
       document.getElementById('app-loading').textContent =
         'Could not load the Pokedex data. Check your connection and reload.';

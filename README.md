@@ -64,6 +64,54 @@ wrong → it drops straight back to box 1. Opening **Study** always leads
 with whatever's due today; Browse can filter to "due for review only" or
 sort "weakest first" too.
 
+## Cross-device sync
+
+By default progress lives only in one browser's `localStorage`, same as
+everything else in this app. There's also an optional sync feature: a
+short code (no account, no password) that lets progress follow her from
+her phone to a laptop and back. Since progress is just quiz stats and
+nothing sensitive, this is deliberately lightweight - whoever has the
+code can read or overwrite it.
+
+Because this needs *something* to hold the shared data, it's the one
+part of this app that isn't purely static files - it needs
+[`server/index.mjs`](server/index.mjs) running somewhere. It's a small,
+dependency-free Node HTTP server storing everything in one JSON file (no
+database to run), so hosting it is light, but it does need to actually be
+running and reachable from the internet for sync to work from outside
+your home network.
+
+**1. Run the server** on your home server, next to (or on the same box
+as) wherever you're already self-hosting things:
+
+```sh
+cd server
+docker build -t pokedex-sync .
+docker run -d --name pokedex-sync -p 8791:8791 -v pokedex-sync-data:/app/data pokedex-sync
+```
+
+(Or just `node server/index.mjs` directly if you'd rather not use Docker
+— same env vars, `PORT` and `DATA_DIR`, apply either way.)
+
+**2. Expose it through your reverse proxy** the same way you're already
+exposing this site and Home Assistant - point a subdomain (e.g.
+`sync.yourdomain.com`) or a path at container port `8791`, so it gets a
+real HTTPS URL.
+
+**3. Point the app at it.** Edit the `API_BASE` constant at the top of
+[`js/sync.js`](js/sync.js) to that URL, then commit and push (or redeploy
+however you're hosting the static site - it doesn't need to be the same
+host as the sync server, `API_BASE` can point anywhere).
+
+Once that's done, **Progress → Sync across devices** lets her tap "Start
+syncing" to get a code (shown on screen, with a copy button), then enter
+that same code under "Join" on any other device to pull that progress
+across. Progress pushes to the server automatically after each answer
+while sync is on; "Sync now" manually re-pulls the latest (this
+overwrites whatever's on that device, by design - simplest to reason
+about, and fine for the "practice on the phone, catch up on the laptop
+later" use case this is built for).
+
 ## Updating the Pokémon data
 
 `data/pokemon.json` is generated, not hand-written — see
@@ -85,6 +133,7 @@ css/styles.css              all styling
 js/dataset.js                loads data/pokemon.json, filter/sort/lookup helpers
 js/typechart.js               type effectiveness chart (weak to / resists)
 js/sound.js                   synthesised correct/wrong sound cues
+js/sync.js                    cross-device progress sync client (see below)
 js/progress.js               Leitner-box localStorage store
 js/browse.js                 search/filter/sort grid + detail overlay
 js/flashcards.js             all three study modes
@@ -94,6 +143,7 @@ manifest.webmanifest         app name, icons and colours when installed
 sw.js                        service worker — offline app shell + sprite caching
 icons/                       home screen icons
 scripts/fetch-pokemon-data.mjs   maintainer-only data generation script
+server/                      optional self-hosted sync server (see below)
 ```
 
 ### Updating it after a change

@@ -105,6 +105,24 @@
       <div id="progress-by-gen" class="breakdown"></div>
       <button id="progress-reset" class="link-btn danger">Reset all progress</button>
 
+      <h3>Sync across devices</h3>
+      <div id="sync-off">
+        <p class="muted">Not syncing yet - this device's progress stays only on this device.</p>
+        <button id="sync-enable" class="btn btn-primary">Start syncing</button>
+        <div class="filter-row">
+          <input id="sync-join-code" type="text" placeholder="Enter a code from another device" autocomplete="off" autocapitalize="characters" maxlength="8">
+          <button id="sync-join" class="btn">Join</button>
+        </div>
+      </div>
+      <div id="sync-on" hidden>
+        <p class="muted">Syncing with code:</p>
+        <p id="sync-code-display" class="sync-code"></p>
+        <button id="sync-copy" class="link-btn">Copy code</button>
+        <button id="sync-now" class="link-btn">Sync now</button>
+        <button id="sync-disable" class="link-btn danger">Stop syncing on this device</button>
+      </div>
+      <p id="sync-status" class="muted"></p>
+
       <h3>App</h3>
       <label class="due-toggle">
         <input type="checkbox" id="sound-toggle">
@@ -136,6 +154,7 @@
 <script src="js/dataset.js"></script>
 <script src="js/typechart.js"></script>
 <script src="js/sound.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/progress.js"></script>
 <script src="js/browse.js"></script>
 <script src="js/flashcards.js"></script>
