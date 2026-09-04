@@ -34,7 +34,14 @@ python3 -m http.server 8000
   dex number, name, type, evolutionary family (each evolution line stays
   grouped together, base → final), or weakest-first (your own accuracy).
   Tap a card for full details: stats, height/weight, abilities, evolution
-  chain, and your study history for that Pokémon.
+  chain, type matchups, and your study history for that Pokémon.
+- **Regional forms** (Alolan, Galarian, Hisuian, Paldean) are their own
+  cards alongside the base species — genuinely different Pokémon with
+  their own typing and evolution line (Alolan Vulpix is Ice-type, not
+  Fire), sharing the same dex number as a badge of where they came from.
+  **Mega Evolution and Gigantamax**, being temporary in-battle-only
+  transformations rather than separate creatures, show up instead as a
+  "Special forms" section on their base Pokémon's detail card.
 - **Study** — two flashcard modes:
   - **Picture → Name** — a silhouette of the artwork; type the name to
     reveal it. Answers are graded automatically (typos in punctuation are
@@ -150,7 +157,7 @@ js/progress.js               Leitner-box localStorage store
 js/browse.js                 search/filter/sort grid + detail overlay
 js/flashcards.js             all three study modes
 js/app.js                    tab routing, progress screen, update checks
-data/pokemon.json            generated dataset (~215 KB)
+data/pokemon.json            generated dataset (~275 KB)
 manifest.webmanifest         app name, icons and colours when installed
 sw.js                        service worker — offline app shell + sprite caching
 icons/                       home screen icons

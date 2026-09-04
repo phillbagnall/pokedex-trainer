@@ -6,7 +6,7 @@
  * and sprite images from the PokeAPI sprite CDN (a different origin) are
  * cached too - but only the ones actually viewed, never pre-fetched.
  */
-var CACHE = 'pokedex-v4';
+var CACHE = 'pokedex-v5';
 var SPRITE_HOST = 'raw.githubusercontent.com';
 
 var SHELL = [

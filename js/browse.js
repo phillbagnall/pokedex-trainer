@@ -134,7 +134,7 @@ window.Browse = (function () {
       card.className = 'poke-card';
       card.dataset.id = p.id;
       card.innerHTML =
-        '<span class="poke-dex">#' + String(p.id).padStart(3, '0') + '</span>' +
+        '<span class="poke-dex">#' + String(p.dex).padStart(3, '0') + '</span>' +
         '<img loading="lazy" src="' + Dataset.imageUrl(p.id, state.shiny) + '" alt="' + p.name + '">' +
         '<span class="poke-name">' + p.name + '</span>' +
         '<span class="type-badges">' + typeBadges(p.types) + '</span>';
@@ -190,6 +190,23 @@ window.Browse = (function () {
     return rows.join('');
   }
 
+  var FORM_KIND_LABELS = { mega: 'Mega Evolution', gmax: 'Gigantamax' };
+
+  function specialFormsBlock(forms) {
+    if (!forms || !forms.length) return '';
+    var cards = forms.map(function (f) {
+      return (
+        '<div class="special-form-card">' +
+          '<img src="' + Dataset.imageUrl(f.id) + '" alt="' + f.name + '">' +
+          '<span class="special-form-name">' + f.name + '</span>' +
+          '<span class="muted">' + (FORM_KIND_LABELS[f.kind] || f.kind) + '</span>' +
+          '<span class="type-badges">' + typeBadges(f.types) + '</span>' +
+        '</div>'
+      );
+    }).join('');
+    return '<h3>Special forms</h3><div class="special-forms">' + cards + '</div>';
+  }
+
   function openDetail(id) {
     var p = Dataset.byId(id);
     if (!p) return;
@@ -202,7 +219,7 @@ window.Browse = (function () {
 
     els.detailBody.innerHTML =
       '<img id="detail-img" class="detail-img" src="' + Dataset.imageUrl(p.id, state.shiny) + '" alt="' + p.name + '">' +
-      '<h2>' + p.name + ' <span class="muted">#' + String(p.id).padStart(3, '0') + '</span></h2>' +
+      '<h2>' + p.name + ' <span class="muted">#' + String(p.dex).padStart(3, '0') + '</span></h2>' +
       '<p class="type-badges">' + typeBadges(p.types) + '</p>' +
       '<div class="matchups">' + matchupsBlock(p.types) + '</div>' +
       '<p class="muted">' + (GEN_LABELS[p.gen] || ('Gen ' + p.gen)) + '</p>' +
@@ -211,6 +228,7 @@ window.Browse = (function () {
       '<p>Abilities: ' + p.abilities.join(', ') + '</p>' +
       '<p class="evo-line">' + evoChainLine(p) + '</p>' +
       (isFamily ? '<button id="detail-see-line" type="button" class="btn btn-primary">See full evolution line</button>' : '') +
+      specialFormsBlock(p.forms) +
       '<p class="muted">' + boxLine + '</p>';
 
     var seeLineBtn = document.getElementById('detail-see-line');
