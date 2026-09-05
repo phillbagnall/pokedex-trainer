@@ -37,14 +37,13 @@
           <select id="browse-gen" aria-label="Filter by generation">
             <option value="">All generations</option>
           </select>
-          <select id="browse-type" aria-label="Filter by type">
-            <option value="">All types</option>
-          </select>
-        </div>
-        <div class="filter-row">
           <select id="browse-family" aria-label="Filter by evolution line">
             <option value="">All evolution lines</option>
           </select>
+        </div>
+        <div class="type-filter">
+          <p class="type-filter-label muted">Filter by type (checking more than one shows Pokemon with all of those types)</p>
+          <div id="browse-type-checks" class="type-checkbox-grid"></div>
         </div>
         <div class="filter-row">
           <select id="browse-sort" aria-label="Sort by">

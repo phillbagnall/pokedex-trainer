@@ -30,11 +30,15 @@ python3 -m http.server 8000
 
 ## What's in it
 
-- **Browse** — search by name, filter by generation, type, or starter
-  Pokémon only (all 27 starter lines, base → final, sorted by generation
-  by default), and sort by dex number, name, type, evolutionary family
-  (each evolution line stays grouped together, base → final), generation,
-  or weakest-first (your own accuracy). Tap a card for full details:
+- **Browse** — search by name; filter by generation, evolution line,
+  starter Pokémon only (all 27 starter lines, base → final, sorted by
+  generation by default), or type — type filtering is checkboxes rather
+  than a single dropdown, so checking more than one (e.g. Water +
+  Fighting) narrows to Pokémon that have *all* of the checked types, not
+  just any of them; and sort by dex number, name, type, evolutionary
+  family (each evolution line stays grouped together, base → final),
+  generation, or weakest-first (your own accuracy). Tap a card for full
+  details:
   stats, height/weight, abilities, evolution chain, type matchups, and
   your study history for that Pokémon. Toggle "Shiny" to swap every
   card's artwork at once, sparkles included.

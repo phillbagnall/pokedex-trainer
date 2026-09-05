@@ -89,12 +89,15 @@ window.Dataset = (function () {
   function filter(opts) {
     opts = opts || {};
     var gen = opts.gen;
-    var type = opts.type;
+    var types = opts.types || [];
     var family = opts.family;
     var query = normalise(opts.query);
     return all.filter(function (p) {
       if (gen && p.gen !== Number(gen)) return false;
-      if (type && p.types.indexOf(type) === -1) return false;
+      // Every checked type must be present - this is an AND/intersection
+      // match (checking Water + Fighting shows only dual Water/Fighting
+      // Pokemon), not an OR/union match.
+      if (types.length && !types.every(function (t) { return p.types.indexOf(t) !== -1; })) return false;
       if (family && p.family !== Number(family)) return false;
       if (opts.startersOnly && !STARTER_FAMILIES.has(p.family)) return false;
       if (query && p.name.toLowerCase().indexOf(query) === -1) return false;

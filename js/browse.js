@@ -15,14 +15,14 @@ window.Browse = (function () {
   var STAT_MAX = 180; // rough ceiling for the stat-bar widths
 
   var els = {};
-  var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false, shiny: false, starters: false };
+  var state = { gen: '', types: [], family: '', query: '', sort: 'dex', dueOnly: false, shiny: false, starters: false };
   var overlayOpen = false;
 
   function init() {
     els.search = document.getElementById('browse-search');
     els.searchClear = document.getElementById('browse-search-clear');
     els.gen = document.getElementById('browse-gen');
-    els.type = document.getElementById('browse-type');
+    els.typeChecks = document.getElementById('browse-type-checks');
     els.family = document.getElementById('browse-family');
     els.sort = document.getElementById('browse-sort');
     els.dueOnly = document.getElementById('browse-due-only');
@@ -42,10 +42,12 @@ window.Browse = (function () {
       els.gen.appendChild(opt);
     });
     Dataset.types().forEach(function (t) {
-      var opt = document.createElement('option');
-      opt.value = t;
-      opt.textContent = t[0].toUpperCase() + t.slice(1);
-      els.type.appendChild(opt);
+      var label = document.createElement('label');
+      label.className = 'type-check type-check-' + t;
+      label.innerHTML =
+        '<input type="checkbox" value="' + t + '">' +
+        '<span>' + t[0].toUpperCase() + t.slice(1) + '</span>';
+      els.typeChecks.appendChild(label);
     });
     Dataset.families()
       .slice()
@@ -69,7 +71,12 @@ window.Browse = (function () {
       render();
     });
     els.gen.addEventListener('change', function () { state.gen = els.gen.value; render(); });
-    els.type.addEventListener('change', function () { state.type = els.type.value; render(); });
+    els.typeChecks.addEventListener('change', function () {
+      state.types = Array.prototype.slice
+        .call(els.typeChecks.querySelectorAll('input:checked'))
+        .map(function (input) { return input.value; });
+      render();
+    });
     els.family.addEventListener('change', function () { state.family = els.family.value; render(); });
     els.sort.addEventListener('change', function () { state.sort = els.sort.value; render(); });
     els.dueOnly.addEventListener('change', function () { state.dueOnly = els.dueOnly.checked; render(); });
@@ -108,13 +115,13 @@ window.Browse = (function () {
 
   function clearFilters() {
     state.gen = '';
-    state.type = '';
+    state.types = [];
     state.family = '';
     state.query = '';
     state.dueOnly = false;
     state.starters = false;
     els.gen.value = '';
-    els.type.value = '';
+    els.typeChecks.querySelectorAll('input:checked').forEach(function (input) { input.checked = false; });
     els.family.value = '';
     els.search.value = '';
     els.searchClear.hidden = true;
@@ -125,7 +132,7 @@ window.Browse = (function () {
 
   function computeList() {
     var list = Dataset.filter({
-      gen: state.gen, type: state.type, family: state.family, query: state.query,
+      gen: state.gen, types: state.types, family: state.family, query: state.query,
       startersOnly: state.starters
     });
     if (state.dueOnly) {
