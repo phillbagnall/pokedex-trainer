@@ -30,11 +30,14 @@ python3 -m http.server 8000
 
 ## What's in it
 
-- **Browse** — search by name, filter by generation and type, and sort by
-  dex number, name, type, evolutionary family (each evolution line stays
-  grouped together, base → final), or weakest-first (your own accuracy).
-  Tap a card for full details: stats, height/weight, abilities, evolution
-  chain, type matchups, and your study history for that Pokémon.
+- **Browse** — search by name, filter by generation, type, or starter
+  Pokémon only (all 27 starter lines, base → final, sorted by generation
+  by default), and sort by dex number, name, type, evolutionary family
+  (each evolution line stays grouped together, base → final), generation,
+  or weakest-first (your own accuracy). Tap a card for full details:
+  stats, height/weight, abilities, evolution chain, type matchups, and
+  your study history for that Pokémon. Toggle "Shiny" to swap every
+  card's artwork at once, sparkles included.
 - **Regional forms** (Alolan, Galarian, Hisuian, Paldean) are their own
   cards alongside the base species — genuinely different Pokémon with
   their own typing and evolution line (Alolan Vulpix is Ice-type, not

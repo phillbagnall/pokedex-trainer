@@ -149,6 +149,7 @@ main { flex: 1; padding: 12px 12px 24px; }
 }
 
 .poke-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -163,6 +164,37 @@ main { flex: 1; padding: 12px 12px 24px; }
 .poke-dex { font-size: 0.7rem; color: var(--muted); }
 .poke-name { font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
 .type-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
+
+/* Shiny mode: a couple of twinkling sparkles plus a soft gold glow on
+   every card's artwork - cheap (pseudo-elements + opacity/filter only,
+   no extra DOM per card) even with a grid this size. */
+.poke-grid.shiny-mode .poke-card img {
+  animation: shiny-glow 2.2s ease-in-out infinite;
+}
+.poke-grid.shiny-mode .poke-card::before,
+.poke-grid.shiny-mode .poke-card::after {
+  content: '\2728';
+  position: absolute;
+  pointer-events: none;
+  animation: shiny-twinkle 1.6s ease-in-out infinite;
+}
+.poke-grid.shiny-mode .poke-card::before {
+  top: 4px; right: 8px;
+  font-size: 13px;
+}
+.poke-grid.shiny-mode .poke-card::after {
+  top: 16px; right: 20px;
+  font-size: 9px;
+  animation-delay: 0.5s;
+}
+@keyframes shiny-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+}
+@keyframes shiny-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 200, 0, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(255, 200, 0, 0.7)); }
+}
 
 .type-badge {
   display: inline-block;

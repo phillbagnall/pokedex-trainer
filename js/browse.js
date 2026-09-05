@@ -15,7 +15,7 @@ window.Browse = (function () {
   var STAT_MAX = 180; // rough ceiling for the stat-bar widths
 
   var els = {};
-  var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false, shiny: false };
+  var state = { gen: '', type: '', family: '', query: '', sort: 'dex', dueOnly: false, shiny: false, starters: false };
   var overlayOpen = false;
 
   function init() {
@@ -26,6 +26,7 @@ window.Browse = (function () {
     els.family = document.getElementById('browse-family');
     els.sort = document.getElementById('browse-sort');
     els.dueOnly = document.getElementById('browse-due-only');
+    els.starters = document.getElementById('browse-starters');
     els.shiny = document.getElementById('browse-shiny');
     els.clearFilters = document.getElementById('browse-clear-filters');
     els.count = document.getElementById('browse-count');
@@ -72,6 +73,17 @@ window.Browse = (function () {
     els.family.addEventListener('change', function () { state.family = els.family.value; render(); });
     els.sort.addEventListener('change', function () { state.sort = els.sort.value; render(); });
     els.dueOnly.addEventListener('change', function () { state.dueOnly = els.dueOnly.checked; render(); });
+    els.starters.addEventListener('change', function () {
+      state.starters = els.starters.checked;
+      // Ordered by generation by default when this turns on, so the nine
+      // trios appear one generation at a time - she can still pick a
+      // different sort afterwards if she wants.
+      if (state.starters) {
+        state.sort = 'gen';
+        els.sort.value = 'gen';
+      }
+      render();
+    });
     els.shiny.addEventListener('change', function () { state.shiny = els.shiny.checked; render(); });
     els.clearFilters.addEventListener('click', clearFilters);
 
@@ -100,17 +112,22 @@ window.Browse = (function () {
     state.family = '';
     state.query = '';
     state.dueOnly = false;
+    state.starters = false;
     els.gen.value = '';
     els.type.value = '';
     els.family.value = '';
     els.search.value = '';
     els.searchClear.hidden = true;
     els.dueOnly.checked = false;
+    els.starters.checked = false;
     render();
   }
 
   function computeList() {
-    var list = Dataset.filter({ gen: state.gen, type: state.type, family: state.family, query: state.query });
+    var list = Dataset.filter({
+      gen: state.gen, type: state.type, family: state.family, query: state.query,
+      startersOnly: state.starters
+    });
     if (state.dueOnly) {
       var due = new Set(Progress.dueIds(Dataset.all().map(function (p) { return p.id; })));
       list = list.filter(function (p) { return due.has(p.id); });
@@ -127,6 +144,7 @@ window.Browse = (function () {
   function render() {
     var list = computeList();
     els.count.textContent = list.length + (list.length === 1 ? ' Pokemon' : ' Pokemon');
+    els.grid.classList.toggle('shiny-mode', state.shiny);
 
     var frag = document.createDocumentFragment();
     list.forEach(function (p) {

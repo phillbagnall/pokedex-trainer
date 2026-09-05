@@ -3,9 +3,16 @@
  *
  * Read-only, no localStorage - mirrors questions.js's role as "the data
  * source module" in the Millionaire app. Every record looks like:
- *   { id, name, types, gen, stats, height, weight, abilities,
- *     evoFrom, evoTo, family, stage }
+ *   { id, dex, name, types, gen, stats, height, weight, abilities,
+ *     evoFrom, evoTo, family, stage, forms }
  * stats is [hp, attack, defense, special-attack, special-defense, speed].
+ * `id` is the unique PokeAPI pokemon id (used for sprite lookup and
+ * Leitner tracking); `dex` is the National Dex number shown as "#037" -
+ * the two differ for regional forms, which share their base species'
+ * `dex` but have their own `id`, `variant` ('alola'|'galar'|'hisui'
+ * |'paldea') and `baseId` (the base species' id). Mega Evolution/
+ * Gigantamax have no dex entry of their own - they're battle-only
+ * transformations listed in their base species' `forms` array instead.
  */
 window.Dataset = (function () {
   'use strict';
@@ -63,6 +70,22 @@ window.Dataset = (function () {
     return (s || '').toLowerCase().trim();
   }
 
+  // The 27 starter Pokemon (one trio per generation) - their `family`
+  // value, since a family root's id equals the starter's own id. Matching
+  // on family (not id) is what pulls in their whole evolution line, not
+  // just the base stage.
+  var STARTER_FAMILIES = new Set([
+    1, 4, 7, // Gen 1: Bulbasaur, Charmander, Squirtle
+    152, 155, 158, // Gen 2: Chikorita, Cyndaquil, Totodile
+    252, 255, 258, // Gen 3: Treecko, Torchic, Mudkip
+    387, 390, 393, // Gen 4: Turtwig, Chimchar, Piplup
+    495, 498, 501, // Gen 5: Snivy, Tepig, Oshawott
+    650, 653, 656, // Gen 6: Chespin, Fennekin, Froakie
+    722, 725, 728, // Gen 7: Rowlet, Litten, Popplio
+    810, 813, 816, // Gen 8: Grookey, Scorbunny, Sobble
+    906, 909, 912  // Gen 9: Sprigatito, Fuecoco, Quaxly
+  ]);
+
   function filter(opts) {
     opts = opts || {};
     var gen = opts.gen;
@@ -73,13 +96,14 @@ window.Dataset = (function () {
       if (gen && p.gen !== Number(gen)) return false;
       if (type && p.types.indexOf(type) === -1) return false;
       if (family && p.family !== Number(family)) return false;
+      if (opts.startersOnly && !STARTER_FAMILIES.has(p.family)) return false;
       if (query && p.name.toLowerCase().indexOf(query) === -1) return false;
       return true;
     });
   }
 
   /*
-   * key: 'dex' | 'name' | 'type' | 'family' | 'weakest'
+   * key: 'dex' | 'name' | 'type' | 'family' | 'gen' | 'weakest'
    * extra.boxOf(id) -> Leitner box number, required for 'weakest'.
    */
   function sortList(list, key, extra) {
@@ -99,6 +123,11 @@ window.Dataset = (function () {
           return a.family - b.family || a.stage - b.stage || a.id - b.id;
         });
         break;
+      case 'gen':
+        copy.sort(function (a, b) {
+          return a.gen - b.gen || a.dex - b.dex || a.stage - b.stage || a.id - b.id;
+        });
+        break;
       case 'weakest':
         if (typeof extra.boxOf === 'function') {
           copy.sort(function (a, b) {
@@ -108,7 +137,12 @@ window.Dataset = (function () {
         break;
       case 'dex':
       default:
-        copy.sort(function (a, b) { return a.id - b.id; });
+        // Regional forms share their base species' dex number (e.g.
+        // Alolan Vulpix and Vulpix are both #037) - sorting by `dex`
+        // keeps them together; the `id` tie-break puts the base form
+        // first, since base ids (1-1025) are always lower than any
+        // form's real PokeAPI id (10000+).
+        copy.sort(function (a, b) { return a.dex - b.dex || a.id - b.id; });
     }
     return copy;
   }
